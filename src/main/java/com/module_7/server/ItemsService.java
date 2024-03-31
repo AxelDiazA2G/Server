@@ -25,8 +25,20 @@ public class ItemsService {
         return itemsRepository.save(item); // Saving the item and returning the persisted entity
     }
 
+    @Transactional
+    public void deleteItem(Long id) {
+        itemsRepository.deleteById(id);
+    }
+
     @Transactional(readOnly = true)
     public List<ItemsEntity> getAllItems() {
-        return itemsRepository.findAll(); // Finding all items
+        try {
+            return itemsRepository.findAll(); // Finding all items
+        } catch (Exception e) {
+            // Log the exception details here
+            System.err.println("An error occurred while fetching all items: " + e.getMessage());
+            throw e;
+        }
     }
+
 }

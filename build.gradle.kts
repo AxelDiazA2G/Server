@@ -17,7 +17,11 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("mysql:mysql-connector-java:8.0.29")
+    implementation("org.springframework.boot:spring-boot-starter-actuator") // Add the version number here
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation ("org.springframework.boot:spring-boot-starter-web")
+    implementation ("com.oracle.database.jdbc:ojdbc8:19.3.0.0")
 }
 
 tasks.withType<Test> {

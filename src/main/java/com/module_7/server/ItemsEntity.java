@@ -1,19 +1,22 @@
 package com.module_7.server;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.sql.Timestamp;
 
 @Entity
+@Table(name = "items") // Ensures Hibernate uses the correct table name
 public class ItemsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ItemID") // This must match the column name for the ID in the database
     private Long id;
 
+    @Column(name = "Description") // Ensure this matches the case exactly ("Description" vs "description")
     private String description;
+
+    @Column(name = "CreatedAt") // Change this to match the column name in the database ("CreatedAd")
     private Timestamp createdAt;
 
     // Standard getters and setters for the id field
