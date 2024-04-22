@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-app-deployment
+  labels:
+    app: server-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: server-app
+  template:
+    metadata:
+      labels:
+        app: server-app
+    spec:
+      containers:
+        - name: server-app
+          image: "axelrdiaz/server-app-1:latest" # Replace with your actual image path
+          ports:
+            - containerPort: 9090
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: "Server"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://host.docker.internal:3306/hibernate?allowMultiQueries=true" # Replace with your MySQL service name and proper database name
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "123"
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: "com.mysql.cj.jdbc.Driver"
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: "org.hibernate.dialect.MySQLDialect"
+            - name: SERVER_PORT
+              value: "9090"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"

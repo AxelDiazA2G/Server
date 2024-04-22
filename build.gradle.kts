@@ -18,12 +18,27 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("mysql:mysql-connector-java:8.0.29")
-    implementation("org.springframework.boot:spring-boot-starter-actuator") // Add the version number here
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    implementation ("org.springframework.boot:spring-boot-starter-web")
-    implementation ("com.oracle.database.jdbc:ojdbc8:19.3.0.0")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("com.oracle.database.jdbc:ojdbc8:19.3.0.0")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    manifest {
+        attributes["Start-Class"] = "com.module_7.server.ServerApplication"
+    }
+}
+
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootWar> {
+    enabled = false
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    archiveFileName.set("app.jar")
 }
