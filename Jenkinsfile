@@ -32,11 +32,14 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    // Build the Docker image
-                    docker.build(env.DOCKER_IMAGE).push()
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        def app = docker.build("axelrdiaz/server-app-1:${env.BUILD_ID}")
+                        app.push()
+                    }
                 }
             }
         }
+
 
         stage('Deploy to Kubernetes') {
             steps {
