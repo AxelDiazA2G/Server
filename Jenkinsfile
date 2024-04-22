@@ -17,8 +17,8 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                // Run Gradle build and test
                 script {
+                    sh 'chmod +x ./gradlew'  // Ensure the script is executable
                     if (isUnix()) {
                         sh './gradlew clean build'
                     } else {
@@ -27,6 +27,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Docker Build and Push') {
             steps {
