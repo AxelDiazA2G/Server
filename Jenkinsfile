@@ -36,29 +36,24 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {
-                // Build the Docker image with a specific tag based on the BUILD_ID
-                def app = docker.build("${DOCKER_IMAGE}-${env.BUILD_ID}")
-                // Push the specific build tag
-                app.push("${env.BUILD_ID}")
-                // Also push the 'latest' tag
-                app.push("latest")
-                    }else{
-                    // Set Docker commands to be executed using batch script in Windows
-                                        bat "docker withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {"
-                                        // Build the Docker image with a specific tag based on the BUILD_ID
-                                                    bat "docker build -t ${env.DOCKER_IMAGE}-${env.BUILD_ID} ."
-                                                    // Push the specific build tag
-                                                    bat "docker push ${env.DOCKER_IMAGE}-${env.BUILD_ID}"
-                                                    // Also push the 'latest' tag
-                                                    bat "docker push ${env.DOCKER_IMAGE}:latest"
-                                                    // Log out from Docker registry
-                                                    bat "docker logout index.docker.io"
+                        // Unix/Linux environment
+                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {
+                            def app = docker.build("${DOCKER_IMAGE}-${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
+                        }
+                    } else {
+                        // Windows environment, using Groovy context for Docker operations
+                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {
+                            def app = docker.build("${DOCKER_IMAGE}-${env.BUILD_ID}")
+                            app.push("${env.BUILD_ID}")
+                            app.push("latest")
+                        }
                     }
-
                 }
             }
         }
+
 
         stage('Deploy to Kubernetes') {
             steps {
