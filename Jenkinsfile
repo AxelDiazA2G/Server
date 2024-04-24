@@ -36,9 +36,6 @@ pipeline {
             steps {
                 script {
 
-                sh 'pwd'
-                            sh 'ls -lahR' // This recursively lists all files and directories in the current directory
-                    // Ensure the Docker context is set to the Jenkins workspace root
                     // The Jenkins workspace root should have the build/libs directory with app-1.jar in it
                     def dockerContext = '.' // This sets the context to the current directory
                     try {
@@ -68,10 +65,10 @@ pipeline {
             }
             steps {
                 script {
-                    sh 'pwd'
+                    def dockerContext = '.' // This sets the context to the current directory
                     try {
-                    sh 'kubectl apply -f deployment.yaml'
-                    sh 'kubectl apply -f service.yaml'
+                    sh 'kubectl apply -f ${dockerContext}/deployment.yaml'
+                    sh 'kubectl apply -f ${dockerContext}/service.yaml'
                         // Extract the commit ID, sanitize it, and use it for deployment
                         def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
