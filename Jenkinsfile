@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+        label 'kube-agent' // Use the label you assigned in the Docker Agent Template
     }
 
     environment {
