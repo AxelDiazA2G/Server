@@ -60,6 +60,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
+                    sh 'pwd'
                     try {
                         // Extract the commit ID, sanitize it, and use it for deployment
                         def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
