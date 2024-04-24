@@ -52,7 +52,8 @@ pipeline {
                     steps {
                         script {
                             def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${commitId} --record"
+                            def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
+                            sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${safeCommitId} --record"
                             sh "kubectl rollout status deployment/server-app-deployment"
                         }
                     }
