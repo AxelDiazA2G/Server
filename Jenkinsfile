@@ -70,6 +70,8 @@ pipeline {
                 script {
                     sh 'pwd'
                     try {
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
                         // Extract the commit ID, sanitize it, and use it for deployment
                         def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
