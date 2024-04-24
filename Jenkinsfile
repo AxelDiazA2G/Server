@@ -17,7 +17,7 @@ pipeline {
                             // Get the cluster server URL and user from the Kubernetes configuration
                                             def serverUrl = 'https://kubernetes.docker.internal:6443'
                                             def user = 'docker-desktop' // Use the user specified in your Kubernetes config
-
+                                            sh "kubectl config view"
                                             // Apply the Kubernetes configurations with the specified user
                                             sh "kubectl apply -f deployment.yaml --server=${serverUrl} --user=${user}"
                                             sh "kubectl apply -f service.yaml --server=${serverUrl} --user=${user}"
