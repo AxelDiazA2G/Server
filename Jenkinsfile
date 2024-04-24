@@ -70,7 +70,7 @@ pipeline {
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
 
                         // Set the Docker image in the Kubernetes deployment
-                        sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${safeCommitId} --record"
+                        sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:latest --record"
 
                         // Check the rollout status to ensure successful deployment
                         sh "kubectl rollout status deployment/server-app-deployment"
