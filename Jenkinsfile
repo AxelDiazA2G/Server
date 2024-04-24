@@ -14,16 +14,16 @@ pipeline {
                 steps {
                     script {
                         try {
-                            sh 'kubectl config use-context docker-desktop' // Change 'docker-desktop' to the name of your Docker Desktop context
-                            echo "Switched to Docker Desktop Kubernetes context."
+                            // Get the cluster server URL from the Kubernetes configuration
+                                            def serverUrl = 'https://kubernetes.docker.internal:6443'
 
+                                            // Apply the Kubernetes configurations
+                                            sh "kubectl apply -f deployment.yaml --server=${serverUrl}"
+                                            sh "kubectl apply -f service.yaml --server=${serverUrl}"
 
-                            // Apply the Kubernetes configurations
-                            sh 'kubectl apply -f deployment.yaml'
-                            sh 'kubectl apply -f service.yaml'
+                                            // Check the rollout status to ensure successful deployment
+                                            sh "kubectl rollout status deployment/server-app-deployment --server=${serverUrl}"
 
-                            // Check the rollout status to ensure successful deployment
-                            sh 'kubectl rollout status deployment/server-app-deployment'
                         } catch (Exception e) {
                             // Log the error and fail the build if there is an issue with the Kubernetes commands
                             echo "Deployment failed: ${e.getMessage()}"
