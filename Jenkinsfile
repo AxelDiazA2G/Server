@@ -35,6 +35,8 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
             sh 'pwd'
+            sh 'ls -lahR' // This recursively lists all files and directories in the current directory
+                    }
                 script {
                     // Ensure the Docker context is set to the Jenkins workspace root
                     // The Jenkins workspace root should have the build/libs directory with app-1.jar in it
