@@ -35,33 +35,38 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
+                    // Ensure we are in the project root directory, which contains the Dockerfile and build/libs
+                    // If your Jenkins checks out the code to a specific directory, use 'cd' to go there
+                    // For example: sh 'cd /path/to/project/root'
+
+                    // Print the current working directory for debugging
+                    sh 'pwd'
+
                     try {
-                        // Assuming Jenkins checks out the repository to the current directory
-                        // and your project is in the root of the repository:
-
-                        // Optionally print out files in the expected directory for debugging
-                        sh 'ls -l build/libs/'
-
                         // Build the Docker image
                         def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
 
-                        // Make sure to include the path to the Dockerfile if it's not in the root
-                        def dockerfile = 'Dockerfile' // or 'path/to/Dockerfile' if it's in a subdirectory
+                        // The Dockerfile path should be relative to the current directory
+                        def dockerfile = 'Dockerfile' // Change this if your Dockerfile is named or located differently
 
-                        // Run the Docker build command, with the build context set to the project root
+                        // Print out files in build/libs/ for debugging
+                        sh 'ls -l build/libs/'
+
+                        // Build and push the Docker image
                         sh "docker build -f ${dockerfile} -t ${DOCKER_IMAGE}:${safeCommitId} ."
                         sh "docker push ${DOCKER_IMAGE}:${safeCommitId}"
                         sh "docker push ${DOCKER_IMAGE}:latest"
 
                     } catch (Exception e) {
-                        // If something goes wrong, print the error and fail the build
+                        // Print the error and fail the build
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
                         error("Stopping the build due to Docker operation failure.")
                     }
                 }
             }
         }
+
 
 
         stage('Deploy to Kubernetes') {
