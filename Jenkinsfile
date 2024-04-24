@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker-agent' // Use the label you assigned in the Docker Agent Template
-    }
+    agent none
 
     environment {
         // Define environment variables
@@ -11,6 +9,9 @@ pipeline {
 
     stages {
         stage('Checkout') {
+        agent {
+                label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+            }
             steps {
                 // Checks out the source code
                 checkout scm
@@ -18,6 +19,9 @@ pipeline {
         }
 
         stage('Build and Test') {
+        agent {
+                label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+            }
             steps {
                 script {
                     // Ensure the gradle wrapper script is executable
@@ -33,6 +37,9 @@ pipeline {
         }
 
         stage('Docker Build and Push') {
+        agent {
+                label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+            }
             steps {
                 script {
 
@@ -63,6 +70,9 @@ pipeline {
 
 
         stage('Deploy to Kubernetes') {
+        agent {
+                label 'kube-agent' // Use the label you assigned in the Docker Agent Template
+            }
             steps {
                 script {
                     sh 'pwd'
