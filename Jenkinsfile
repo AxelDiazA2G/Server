@@ -34,6 +34,7 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
+            sh 'pwd'
                 script {
                     // Ensure the Docker context is set to the Jenkins workspace root
                     // The Jenkins workspace root should have the build/libs directory with app-1.jar in it
