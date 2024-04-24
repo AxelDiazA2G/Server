@@ -46,6 +46,7 @@ pipeline {
                         }
                     } catch (Exception e) {
                         // Handle errors related to Docker operations
+                        echo "Docker Image: ${env.DOCKER_IMAGE}"
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
                         error("Stopping the build due to Docker operation failure.")
                     }
