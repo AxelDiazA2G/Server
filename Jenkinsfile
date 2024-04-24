@@ -67,6 +67,9 @@ spec:
   containers:
   - name: kubectl-container
     image: axelrdiaz/kubeagent
+    env:
+          - name: JENKINS_URL
+            value: "http://jenkins:8080" # Update this line with the correct service name and port
     command:
     - cat
     tty: true
