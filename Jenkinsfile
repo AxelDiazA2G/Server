@@ -38,13 +38,13 @@ pipeline {
                     // The Jenkins workspace root should have the build/libs directory with app-1.jar in it
                     def dockerContext = '.' // This sets the context to the current directory
                     try {
-                        withDockerRegistry([ credentialsId: "docker-hub-credentials", url: "" ]) {
-                        def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                        def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
+                        withDockerRegistry(credentialsId: "docker-hub-credentials", url: "") {
+                            def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
 
-                        // Build the Docker image using the specified context
-                        sh "docker build -f ${dockerContext}/Dockerfile -t ${DOCKER_IMAGE}:latest ${dockerContext}"
-                        sh "docker push ${DOCKER_IMAGE}:latest"
+                            // Build the Docker image using the specified context
+                            sh "docker build -f ${dockerContext}/Dockerfile -t ${DOCKER_IMAGE}:latest ${dockerContext}"
+                            sh "docker push ${DOCKER_IMAGE}:latest"
                         }
                     } catch (Exception e) {
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
@@ -53,6 +53,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Deploy to Kubernetes') {
                     agent {
