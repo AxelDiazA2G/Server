@@ -35,7 +35,6 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    // The Jenkins workspace root should have the build/libs directory with app-1.jar in it
                     def dockerContext = '.' // This sets the context to the current directory
                     try {
                         withDockerRegistry(credentialsId: "docker-hub-credentials", url: "") {
@@ -45,66 +44,64 @@ pipeline {
                             // Build the Docker image using the specified context
                             sh "docker build -f ${dockerContext}/Dockerfile -t ${DOCKER_IMAGE}:latest ${dockerContext}"
                             sh "docker push ${DOCKER_IMAGE}:latest"
-                        }
+                        } // Close withDockerRegistry
                     } catch (Exception e) {
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
                         error("Stopping the build due to Docker operation failure.")
                     }
-                }
-            }
-        }
-
+                } // Close script
+            } // Close steps
+        } // Close stage
 
         stage('Deploy to Kubernetes') {
-                    agent {
-                        kubernetes {
-                            // Use the label of your predefined pod template
-                            label 'kube-agent'
-                            yaml """
-        apiVersion: v1
-        kind: Pod
-        spec:
-          containers:
-          - name: kubectl-container
-            image: axelrdiaz/kubeagent
-            env:
-              - name: JENKINS_URL
-                value: "http://jenkins:8080"  // Ensure this URL is accessible from within the pod
-            command:
-            - sh
-            args:
-            - -c
-            - "while sleep 3600; do :; done"  // Keep the container running for Jenkins commands
-            tty: true
-        """
-                        }
+            agent {
+                kubernetes {
+                    label 'kube-agent'
+                    yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kubectl-container
+    image: axelrdiaz/kubeagent
+    env:
+      - name: JENKINS_URL
+        value: "http://jenkins:8080"  // Ensure this URL is accessible from within the pod
+    command:
+    - sh
+    args:
+    - -c
+    - "while sleep 3600; do :; done"  // Keep the container running for Jenkins commands
+    tty: true
+"""
+                } // Close kubernetes
+            } // Close agent
+            steps {
+                script {
+                    def dockerContext = '.' // Sets the context to the current directory
+                    try {
+                        // Explicitly using Jenkins URL in commands if necessary
+                        env.JENKINS_URL = "http://jenkins:8080" // Override JENKINS_URL for this block
+                        sh 'kubectl apply -f ${dockerContext}/deployment.yaml'
+                        sh 'kubectl apply -f ${dockerContext}/service.yaml'
+
+                        // Extract the commit ID, sanitize it, and use it for deployment
+                        def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
+
+                        // Set the Docker image in the Kubernetes deployment
+                        sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:latest --record"
+
+                        // Check the rollout status to ensure successful deployment
+                        sh "kubectl rollout status deployment/server-app-deployment"
+                    } catch (Exception e) {
+                        echo "Deployment failed: ${e.getMessage()}"
+                        error("Stopping the build due to a failure in deploying to Kubernetes.")
                     }
-                    steps {
-                        script {
-                            def dockerContext = '.' // Sets the context to the current directory
-                            try {
-                                // Explicitly using Jenkins URL in commands if necessary
-                                env.JENKINS_URL = "http://jenkins:8080" // Override JENKINS_URL for this block
-                                sh 'kubectl apply -f ${dockerContext}/deployment.yaml'
-                                sh 'kubectl apply -f ${dockerContext}/service.yaml'
-
-                                // Extract the commit ID, sanitize it, and use it for deployment
-                                def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                                def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
-
-                                // Set the Docker image in the Kubernetes deployment
-                                sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:latest --record"
-
-                                // Check the rollout status to ensure successful deployment
-                                sh "kubectl rollout status deployment/server-app-deployment"
-                            } catch (Exception e) {
-                                // Log the error and fail the build if there is an issue with the Kubernetes commands
-                                echo "Deployment failed: ${e.getMessage()}"
-                                error("Stopping the build due to a failure in deploying to Kubernetes.")
-                            }
-                        }
-                    }
-                }
+                } // Close script
+            } // Close steps
+        } // Close stage
+    } // Close stages
 
     post {
         always {
@@ -117,5 +114,5 @@ pipeline {
         failure {
             echo 'Pipeline failed.'
         }
-    }
-}
+    } // Close post
+} // Close pipeline
