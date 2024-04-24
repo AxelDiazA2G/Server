@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         // Define environment variables
-        DOCKER_IMAGE = 'axelrdiaz/server-app-1:latest'
+        DOCKER_IMAGE = 'axelrdiaz/server-app-1'
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials'  // ID of your Docker credentials in Jenkins
     }
 
@@ -46,8 +46,8 @@ pipeline {
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
 
                         // Build the Docker image using the specified context
-                        sh "docker build -f ${dockerContext}/Dockerfile -t ${DOCKER_IMAGE}:${safeCommitId} ${dockerContext}"
-                        sh "docker push ${DOCKER_IMAGE}:${safeCommitId}"
+                        sh "docker build -f ${dockerContext}/Dockerfile -t ${DOCKER_IMAGE}:latest ${dockerContext}"
+                        //sh "docker push ${DOCKER_IMAGE}:${safeCommitId}"
                         sh "docker push ${DOCKER_IMAGE}:latest"
                     } catch (Exception e) {
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
