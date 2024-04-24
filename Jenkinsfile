@@ -2,8 +2,9 @@ pipeline {
 
 agent none
     stages {
-    podTemplate(inheritFrom: 'kube-agent-tfvrh') {
+
         stage('Example') {
+        podTemplate(inheritFrom: 'kube-agent-tfvrh') {
             steps {
                 echo 'Hello, Kubernetes!'
             }
