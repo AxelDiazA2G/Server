@@ -37,9 +37,10 @@ pipeline {
                         script {
                             // Assuming Jenkins is running on Unix/Linux or inside Docker on any platform
                             def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
                             docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS_ID) {
-                                def app = docker.build("${DOCKER_IMAGE}:${commitId}")
-                                app.push(commitId)
+                                def app = docker.build("${DOCKER_IMAGE}:${safeCommitId}")
+                                app.push(safeCommitId)
                                 app.push("latest")
                             }
                         }
