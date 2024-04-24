@@ -14,7 +14,7 @@ pipeline {
                 steps {
                     script {
                         try {
-                        sh 'kubectl config current-context'
+                        sh 'kubectl config get-contexts'
                             // Apply the Kubernetes configurations
                             sh 'kubectl apply -f deployment.yaml'
                             sh 'kubectl apply -f service.yaml'
