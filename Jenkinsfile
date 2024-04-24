@@ -1,15 +1,11 @@
 pipeline {
-    agent {
-        kubernetes {
-            // Specifics of the pod template
-            label 'kube-agent-tfvrh'
-        }
-    }
     stages {
+    podTemplate(inheritFrom: 'kube-agent-tfvrh') {
         stage('Example') {
             steps {
                 echo 'Hello, Kubernetes!'
             }
         }
+       }
     }
 }
