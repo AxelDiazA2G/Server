@@ -14,15 +14,9 @@ pipeline {
                 steps {
                     script {
                         try {
-                            // Get the current Kubernetes context
-                            def currentContext = sh(script: 'kubectl config current-context', returnStdout: true).trim()
-                            echo "Current Kubernetes context: ${currentContext}"
+                            sh 'kubectl config use-context docker-desktop' // Change 'docker-desktop' to the name of your Docker Desktop context
+                            echo "Switched to Docker Desktop Kubernetes context."
 
-                            // If the current context is not the one you want to use, switch to the desired context
-                            if (currentContext != 'docker-desktop') { // Change 'docker-desktop' to the name of your Docker Desktop context
-                                sh 'kubectl config use-context docker-desktop' // Change 'docker-desktop' to the name of your Docker Desktop context
-                                echo "Switched to Docker Desktop Kubernetes context."
-                            }
 
                             // Apply the Kubernetes configurations
                             sh 'kubectl apply -f deployment.yaml'
