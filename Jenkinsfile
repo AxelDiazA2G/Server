@@ -1,7 +1,7 @@
 pipeline {
     agent {
-            label 'docker-agent' // Use the label you assigned in the Docker Agent Template
-        }
+        label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+    }
 
     environment {
         // Define environment variables
@@ -53,8 +53,6 @@ pipeline {
             }
         }
 
-
-
         stage('Deploy to Kubernetes') {
             steps {
                 script {
@@ -76,7 +74,7 @@ pipeline {
                 }
             }
         }
-
+    }
 
     post {
         always {
