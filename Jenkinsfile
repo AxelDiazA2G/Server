@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         // Define environment variables
-        DOCKER_IMAGE = 'server-app-1'
+        DOCKER_IMAGE = 'server-app-1:latest'
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials'  // ID of your Docker credentials in Jenkins
     }
 
