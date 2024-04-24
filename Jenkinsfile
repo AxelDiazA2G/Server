@@ -36,23 +36,33 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Attempt to build and push the Docker image
+                        // Assuming Jenkins checks out the repository to the current directory
+                        // and your project is in the root of the repository:
+
+                        // Optionally print out files in the expected directory for debugging
+                        sh 'ls -l build/libs/'
+
+                        // Build the Docker image
                         def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
-                        docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS_ID) {
-                            def app = docker.build("${DOCKER_IMAGE}:${safeCommitId}")
-                            app.push(safeCommitId)
-                            app.push("latest")
-                        }
+
+                        // Make sure to include the path to the Dockerfile if it's not in the root
+                        def dockerfile = 'Dockerfile' // or 'path/to/Dockerfile' if it's in a subdirectory
+
+                        // Run the Docker build command, with the build context set to the project root
+                        sh "docker build -f ${dockerfile} -t ${DOCKER_IMAGE}:${safeCommitId} ."
+                        sh "docker push ${DOCKER_IMAGE}:${safeCommitId}"
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+
                     } catch (Exception e) {
-                        // Handle errors related to Docker operations
-                        echo "Docker Image: ${env.DOCKER_IMAGE}"
+                        // If something goes wrong, print the error and fail the build
                         echo "Failed to build or push Docker image: ${e.getMessage()}"
                         error("Stopping the build due to Docker operation failure.")
                     }
                 }
             }
         }
+
 
         stage('Deploy to Kubernetes') {
             steps {
