@@ -1,12 +1,12 @@
 pipeline {
-    agent any
+    agent {
+            label 'docker-agent' // Use the label you assigned in the Docker Agent Template
+        }
 
     environment {
         // Define environment variables
         DOCKER_IMAGE = 'axelrdiaz/server-app-1:latest'
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials'  // ID of your Docker credentials in Jenkins
-        // Update the PATH environment variable to include the Docker executable path
-        PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
     }
 
     stages {
@@ -33,37 +33,30 @@ pipeline {
         }
 
         stage('Docker Build and Push') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        // Unix/Linux environment
-                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {
-                            def app = docker.build("${DOCKER_IMAGE}-${env.BUILD_ID}")
-                            app.push("${env.BUILD_ID}")
-                            app.push("latest")
+                    steps {
+                        script {
+                            // Assuming Jenkins is running on Unix/Linux or inside Docker on any platform
+                            def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS_ID) {
+                                def app = docker.build("${DOCKER_IMAGE}:${commitId}")
+                                app.push(commitId)
+                                app.push("latest")
+                            }
                         }
-                    } else {
-                        // Windows environment, using Groovy context for Docker operations
-                        docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIALS_ID) {
-                            def app = docker.build("${DOCKER_IMAGE}-${env.BUILD_ID}")
-                            app.push("${env.BUILD_ID}")
-                            app.push("latest")
+                    }
+                }
+
+
+        stage('Deploy to Kubernetes') {
+                    steps {
+                        script {
+                            def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${commitId} --record"
+                            sh "kubectl rollout status deployment/server-app-deployment"
                         }
                     }
                 }
             }
-        }
-
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Update Kubernetes deployment using shell script
-                    sh "kubectl set image deployment/server-app-deployment server-app=${env.DOCKER_IMAGE} --record"
-                }
-            }
-        }
-    }
 
     post {
         always {
