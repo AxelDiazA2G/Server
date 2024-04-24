@@ -14,17 +14,17 @@ pipeline {
                 steps {
                     script {
                         try {
-                            // Get the cluster server URL from the Kubernetes configuration
+                            // Get the cluster server URL and user from the Kubernetes configuration
                                             def serverUrl = 'https://kubernetes.docker.internal:6443'
+                                            def user = 'docker-desktop' // Use the user specified in your Kubernetes config
 
-                                            // Apply the Kubernetes configurations
-                                            sh "kubectl apply -f deployment.yaml --server=${serverUrl}"
-                                            sh "kubectl apply -f service.yaml --server=${serverUrl}"
+                                            // Apply the Kubernetes configurations with the specified user
+                                            sh "kubectl apply -f deployment.yaml --server=${serverUrl} --user=${user}"
+                                            sh "kubectl apply -f service.yaml --server=${serverUrl} --user=${user}"
 
                                             // Check the rollout status to ensure successful deployment
-                                            sh "kubectl rollout status deployment/server-app-deployment --server=${serverUrl}"
-
-                        } catch (Exception e) {
+                                            sh "kubectl rollout status deployment/server-app-deployment --server=${serverUrl} --user=${user}"
+                                        } catch (Exception e) {
                             // Log the error and fail the build if there is an issue with the Kubernetes commands
                             echo "Deployment failed: ${e.getMessage()}"
                             error("Stopping the build due to a failure in deploying to Kubernetes.")
