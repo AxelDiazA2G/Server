@@ -33,32 +33,50 @@ pipeline {
         }
 
         stage('Docker Build and Push') {
-                    steps {
-                        script {
-                            // Assuming Jenkins is running on Unix/Linux or inside Docker on any platform
-                            def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
-                            docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS_ID) {
-                                def app = docker.build("${DOCKER_IMAGE}:${safeCommitId}")
-                                app.push(safeCommitId)
-                                app.push("latest")
-                            }
+            steps {
+                script {
+                    try {
+                        // Attempt to build and push the Docker image
+                        def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
+                        docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS_ID) {
+                            def app = docker.build("${DOCKER_IMAGE}:${safeCommitId}")
+                            app.push(safeCommitId)
+                            app.push("latest")
                         }
-                    }
-                }
-
-
-        stage('Deploy to Kubernetes') {
-                    steps {
-                        script {
-                            def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
-                            sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${safeCommitId} --record"
-                            sh "kubectl rollout status deployment/server-app-deployment"
-                        }
+                    } catch (Exception e) {
+                        // Handle errors related to Docker operations
+                        echo "Failed to build or push Docker image: ${e.getMessage()}"
+                        error("Stopping the build due to Docker operation failure.")
                     }
                 }
             }
+        }
+
+
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    try {
+                        // Extract the commit ID, sanitize it, and use it for deployment
+                        def commitId = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        def safeCommitId = commitId.replaceAll(/[^a-zA-Z0-9_.-]/, '_')
+
+                        // Set the Docker image in the Kubernetes deployment
+                        sh "kubectl set image deployment/server-app-deployment server-app=${DOCKER_IMAGE}:${safeCommitId} --record"
+
+                        // Check the rollout status to ensure successful deployment
+                        sh "kubectl rollout status deployment/server-app-deployment"
+                    } catch (Exception e) {
+                        // Log the error and fail the build if there is an issue with the Kubernetes commands
+                        echo "Deployment failed: ${e.getMessage()}"
+                        error("Stopping the build due to a failure in deploying to Kubernetes.")
+                    }
+                }
+            }
+        }
+
 
     post {
         always {
