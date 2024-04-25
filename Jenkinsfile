@@ -56,7 +56,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             agent {
                 kubernetes {
-                    label 'kube-agent'
+                    inheritFrom 'kube-agent'
                     yaml """
 apiVersion: v1
 kind: Pod
