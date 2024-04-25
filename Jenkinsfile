@@ -66,12 +66,12 @@ spec:
     image: axelrdiaz/kubeagent
     env:
       - name: JENKINS_URL
-        value: "http://jenkins:8080"  // Ensure this URL is accessible from within the pod
+        value: "http://jenkins:8080"  # Ensure this URL is accessible from within the pod
     command:
     - sh
     args:
     - -c
-    - "while sleep 3600; do :; done"  // Keep the container running for Jenkins commands
+    - "while sleep 3600; do :; done"  # Keep the container running for Jenkins commands
     tty: true
 """
                 } // Close kubernetes
